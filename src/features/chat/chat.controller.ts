@@ -20,7 +20,7 @@ export function getChatController(config: AppConfig): RequestHandler {
     const booking =
       await managementHttpClient.getBookingByIdIfExists(bookingId);
     if (booking === null) {
-      response.status(404).json({ error: "Booking not found" });
+      response.status(200).json({ bookingId, chat: [] });
       return;
     }
 
