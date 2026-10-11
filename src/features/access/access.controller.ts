@@ -1,6 +1,7 @@
 import type { RequestHandler } from "express";
 import type { AppConfig } from "../../config.js";
 import { ManagementHttpClient } from "./management-http-client.js";
+import { isUserAllowedOnBooking } from "./isUserAllowedOnBooking.js";
 import { AccessRequestSchema, type AccessResponse } from "./models/access.js";
 
 export function createRoomSessionController(config: AppConfig): RequestHandler {
@@ -32,8 +33,7 @@ export function createRoomSessionController(config: AppConfig): RequestHandler {
     }
 
     const userId = response.locals.userId as string;
-    const allowedUserIds = new Set([booking.userId, ...booking.invitedUserIds]);
-    if (!allowedUserIds.has(userId)) {
+    if (!isUserAllowedOnBooking(booking, userId)) {
       response
         .status(400)
         .json({ error: "User is not allowed to access this booking" });

@@ -26,9 +26,24 @@ export class ManagementHttpClient {
   }
 
   async getBookingById(bookingId: string): Promise<ManagementBooking> {
-    const response = await this.httpClient.get(
+    const booking = await this.getBookingByIdIfExists(bookingId);
+    if (booking === null) {
+      throw new Error("Management API could not find the booking");
+    }
+
+    return booking;
+  }
+
+  async getBookingByIdIfExists(
+    bookingId: string,
+  ): Promise<ManagementBooking | null> {
+    const response = await this.httpClient.getOptional(
       `/bookings/${encodeURIComponent(bookingId)}`,
     );
+    if (response === null) {
+      return null;
+    }
+
     const result = ManagementBookingSchema.safeParse(response);
     if (!result.success) {
       throw new Error("Management API returned an invalid booking");
