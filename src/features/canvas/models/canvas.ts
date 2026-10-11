@@ -17,6 +17,9 @@ export const CanvasElementSchema = z.object({
   height: z.number().optional(),
 });
 
-export type CanvasElement = z.infer<typeof CanvasElementSchema>;
+export const PostCanvasBodySchema = z.object({
+  bookingId: z.string().min(1),
+  element: CanvasElementSchema,
+});
 
-export type CanvasEntry = CanvasElement | null;
+export type CanvasElement = z.infer<typeof CanvasElementSchema>;

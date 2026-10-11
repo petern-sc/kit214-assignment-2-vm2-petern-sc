@@ -1,10 +1,9 @@
 import { database } from "../../shared/database.js";
-import type { CanvasEntry } from "./models/canvas.js";
+import type { CanvasElement } from "./models/canvas.js";
 
 type CanvasElementRecord = {
   booking_id: string;
-  position: number;
-  id: string | null;
+  id: string;
   element_type: string | number | null;
   shape_type: string | null;
   x: number | null;
@@ -18,20 +17,52 @@ type CanvasElementRecord = {
 
 export async function getCanvasForBooking(
   bookingId: string,
-): Promise<CanvasEntry[]> {
+): Promise<CanvasElement[]> {
   const records = await database<CanvasElementRecord>("canvas_elements")
     .select<CanvasElementRecord[]>("*")
-    .where("booking_id", bookingId)
-    .orderBy("position", "asc");
+    .where("booking_id", bookingId);
 
-  return records.map(canvasEntryFromRecord);
+  return records.map(canvasElementFromRecord);
 }
 
-function canvasEntryFromRecord(record: CanvasElementRecord): CanvasEntry {
-  if (record.id === null) {
+export async function getCanvasElement(
+  bookingId: string,
+  elementId: string,
+): Promise<CanvasElement | null> {
+  const record = await database<CanvasElementRecord>("canvas_elements")
+    .where({ booking_id: bookingId, id: elementId })
+    .first();
+
+  if (record === undefined) {
     return null;
   }
 
+  return canvasElementFromRecord(record);
+}
+
+export async function createCanvasElement(
+  bookingId: string,
+  element: CanvasElement,
+): Promise<CanvasElement> {
+  await database("canvas_elements").insert(
+    toCanvasElementRecord(bookingId, element),
+  );
+
+  return element;
+}
+
+export async function saveCanvasElement(
+  bookingId: string,
+  element: CanvasElement,
+): Promise<CanvasElement> {
+  await database<CanvasElementRecord>("canvas_elements")
+    .where({ booking_id: bookingId, id: element.id })
+    .update(toCanvasElementRecord(bookingId, element));
+
+  return element;
+}
+
+function canvasElementFromRecord(record: CanvasElementRecord): CanvasElement {
   return {
     id: record.id,
     ...optionalField("type", record.element_type),
@@ -44,6 +75,29 @@ function canvasEntryFromRecord(record: CanvasElementRecord): CanvasEntry {
     ...optionalField("width", record.width),
     ...optionalField("height", record.height),
   };
+}
+
+function toCanvasElementRecord(
+  bookingId: string,
+  element: CanvasElement,
+): CanvasElementRecord {
+  return {
+    booking_id: bookingId,
+    id: element.id,
+    element_type: jsonColumn(element.type),
+    shape_type: element.shapeType ?? null,
+    x: element.x ?? null,
+    y: element.y ?? null,
+    color: jsonColumn(element.color),
+    content: element.content ?? null,
+    text: element.text ?? null,
+    width: element.width ?? null,
+    height: element.height ?? null,
+  };
+}
+
+function jsonColumn(value: string | number | undefined): string | null {
+  return value === undefined ? null : JSON.stringify(value);
 }
 
 function optionalField<Key extends string, Value>(

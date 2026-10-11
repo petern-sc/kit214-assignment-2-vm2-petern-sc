@@ -9,8 +9,7 @@ CREATE TABLE IF NOT EXISTS chat_messages (
 
 CREATE TABLE IF NOT EXISTS canvas_elements (
   booking_id VARCHAR(255) NOT NULL,
-  position INT UNSIGNED NOT NULL,
-  id VARCHAR(255) NULL,
+  id VARCHAR(255) NOT NULL,
   element_type JSON NULL,
   shape_type VARCHAR(255) NULL,
   x DOUBLE NULL,
@@ -20,6 +19,5 @@ CREATE TABLE IF NOT EXISTS canvas_elements (
   `text` TEXT NULL,
   width DOUBLE NULL,
   height DOUBLE NULL,
-  PRIMARY KEY (booking_id, position),
-  INDEX index_canvas_elements_id (booking_id, id)
+  PRIMARY KEY (booking_id, id)
 ) ENGINE=InnoDB;
