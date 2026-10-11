@@ -21,3 +21,26 @@ export async function getChatHistory(
     timestamp: record.created_at,
   }));
 }
+
+export async function createChatMessage(
+  bookingId: string,
+  sender: string,
+  text: string,
+): Promise<ChatMessage> {
+  const timestamp = new Date().toISOString();
+  const [insertedId] = await database<ChatMessageRecord>(
+    "chat_messages",
+  ).insert({
+    booking_id: bookingId,
+    sender,
+    text,
+    created_at: timestamp,
+  });
+
+  return {
+    id: BigInt(insertedId).toString(36),
+    sender,
+    text,
+    timestamp,
+  };
+}

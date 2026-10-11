@@ -4,6 +4,12 @@ export const GetChatQuerySchema = z.object({
   bookingId: z.string().min(1),
 });
 
+export const PostChatMessageSchema = z.object({
+  bookingId: z.string().min(1),
+  text: z.string().min(1),
+  userId: z.string().optional(),
+});
+
 export type ChatMessage = {
   id: string;
   sender: string;
