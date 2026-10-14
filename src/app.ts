@@ -3,11 +3,13 @@ import type { AppConfig } from "./config.js";
 import { createAccessRoutes } from "./features/access/access.routes.js";
 import { createCanvasRoutes } from "./features/canvas/canvas.routes.js";
 import { createChatRoutes } from "./features/chat/chat.routes.js";
+import { corsMiddleware } from "./shared/cors.js";
 import { errorHandler } from "./shared/error-handler.js";
 
 export function createApp(config: AppConfig) {
   const app = express();
 
+  app.use(corsMiddleware);
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
   app.use(createAccessRoutes(config));

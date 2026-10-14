@@ -5,6 +5,11 @@
 Install dependencies and start the development server:
 
 ```sh
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+source ~/.nvm/nvm.sh
+nvm install 26
+sudo apt install -y libatomic1
+
 npm install
 npm run dev
 ```
