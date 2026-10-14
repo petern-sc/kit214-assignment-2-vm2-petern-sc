@@ -1,16 +1,22 @@
 import type { ErrorRequestHandler } from "express";
+import { sendErrorResponse } from "./error-response.js";
 
 export const errorHandler: ErrorRequestHandler = (
   error,
-  _request,
+  request,
   response,
   next,
 ) => {
-  console.error(error);
+  console.error("Unhandled request error", {
+    method: request.method,
+    path: request.originalUrl,
+    error,
+  });
+
   if (response.headersSent) {
     next(error);
     return;
   }
 
-  response.status(500).json({ error: "Internal server error." });
+  sendErrorResponse(response, 500, "Internal server error.");
 };

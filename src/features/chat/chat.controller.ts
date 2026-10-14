@@ -3,6 +3,10 @@ import type { AppConfig } from "../../config.js";
 import { ManagementHttpClient } from "../access/management-http-client.js";
 import { createChatMessage, getChatHistory } from "./chat.repository.js";
 import { GetChatQuerySchema, PostChatMessageSchema } from "./models/chat.js";
+import {
+  sendErrorResponse,
+  sendValidationError,
+} from "../../shared/error-response.js";
 
 export function getChatController(config: AppConfig): RequestHandler {
   const managementHttpClient = new ManagementHttpClient(
@@ -12,7 +16,7 @@ export function getChatController(config: AppConfig): RequestHandler {
   return async (request, response) => {
     const query = GetChatQuerySchema.safeParse(request.query);
     if (!query.success) {
-      response.status(400).json({ error: "A bookingId is required" });
+      sendValidationError(response, "A bookingId is required", query.error);
       return;
     }
 
@@ -37,7 +41,11 @@ export function postChatController(config: AppConfig): RequestHandler {
   return async (request, response) => {
     const messageRequest = PostChatMessageSchema.safeParse(request.body);
     if (!messageRequest.success) {
-      response.status(400).json({ error: "Invalid request body" });
+      sendValidationError(
+        response,
+        "Invalid request body",
+        messageRequest.error,
+      );
       return;
     }
 
@@ -45,16 +53,14 @@ export function postChatController(config: AppConfig): RequestHandler {
     const booking =
       await managementHttpClient.getBookingByIdIfExists(bookingId);
     if (booking === null) {
-      response.status(404).json({ error: "Booking not found" });
+      sendErrorResponse(response, 404, "Booking not found");
       return;
     }
 
     const activeBookingId =
       await managementHttpClient.getActiveBookingIdForRoom(booking.roomId);
     if (activeBookingId !== bookingId) {
-      response
-        .status(400)
-        .json({ error: "No active booking found for this room" });
+      sendErrorResponse(response, 400, "No active booking found for this room");
       return;
     }
 

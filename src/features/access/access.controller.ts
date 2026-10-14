@@ -3,6 +3,10 @@ import type { AppConfig } from "../../config.js";
 import { ManagementHttpClient } from "./management-http-client.js";
 import { isUserAllowedOnBooking } from "./isUserAllowedOnBooking.js";
 import { AccessRequestSchema, type AccessResponse } from "./models/access.js";
+import {
+  sendErrorResponse,
+  sendValidationError,
+} from "../../shared/error-response.js";
 
 export function createRoomSessionController(config: AppConfig): RequestHandler {
   const managementHttpClient = new ManagementHttpClient(
@@ -12,7 +16,11 @@ export function createRoomSessionController(config: AppConfig): RequestHandler {
   return async (request, response) => {
     const accessRequest = AccessRequestSchema.safeParse(request.body);
     if (!accessRequest.success) {
-      response.status(400).json({ error: "Invalid access request" });
+      sendValidationError(
+        response,
+        "Invalid access request",
+        accessRequest.error,
+      );
       return;
     }
 
@@ -20,23 +28,23 @@ export function createRoomSessionController(config: AppConfig): RequestHandler {
     const activeBookingId =
       await managementHttpClient.getActiveBookingIdForRoom(roomId);
     if (activeBookingId === null || activeBookingId !== bookingId) {
-      response
-        .status(400)
-        .json({ error: "No active booking found for this room" });
+      sendErrorResponse(response, 400, "No active booking found for this room");
       return;
     }
 
     const booking = await managementHttpClient.getBookingById(activeBookingId);
     if (booking.id !== bookingId || booking.roomId !== roomId) {
-      response.status(400).json({ error: "Booking does not match this room" });
+      sendErrorResponse(response, 400, "Booking does not match this room");
       return;
     }
 
     const userId = response.locals.userId as string;
     if (!isUserAllowedOnBooking(booking, userId)) {
-      response
-        .status(400)
-        .json({ error: "User is not allowed to access this booking" });
+      sendErrorResponse(
+        response,
+        400,
+        "User is not allowed to access this booking",
+      );
       return;
     }
 

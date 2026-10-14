@@ -6,6 +6,7 @@ import {
   saveCanvasElement,
 } from "./canvas.repository.js";
 import { GetCanvasQuerySchema, PostCanvasBodySchema } from "./models/canvas.js";
+import { sendValidationError } from "../../shared/error-response.js";
 
 export const getCanvasController: RequestHandler = async (
   request,
@@ -13,7 +14,7 @@ export const getCanvasController: RequestHandler = async (
 ) => {
   const query = GetCanvasQuerySchema.safeParse(request.query);
   if (!query.success) {
-    response.status(400).json({ error: "A bookingId is required" });
+    sendValidationError(response, "A bookingId is required", query.error);
     return;
   }
 
@@ -28,7 +29,7 @@ export const postCanvasController: RequestHandler = async (
 ) => {
   const body = PostCanvasBodySchema.safeParse(request.body);
   if (!body.success) {
-    response.status(400).json({ error: "Invalid request body" });
+    sendValidationError(response, "Invalid request body", body.error);
     return;
   }
 

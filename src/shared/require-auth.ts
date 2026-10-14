@@ -1,14 +1,14 @@
 import type { RequestHandler } from "express";
 import jwt from "jsonwebtoken";
 import type { AppConfig } from "../config.js";
+import { sendErrorResponse } from "./error-response.js";
 
 export function createRequireAuth(config: AppConfig): RequestHandler {
   return (request, response, next) => {
     const authHeader = request.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return response.status(401).json({
-        error: "Authentication token required",
-      });
+      sendErrorResponse(response, 401, "Authentication token required");
+      return;
     }
 
     const token = authHeader.slice("Bearer ".length);
@@ -20,17 +20,14 @@ export function createRequireAuth(config: AppConfig): RequestHandler {
         typeof jwtPayload === "string" ||
         typeof jwtPayload.sub !== "string"
       ) {
-        return response.status(401).json({
-          error: "Invalid or expired token",
-        });
+        sendErrorResponse(response, 401, "Invalid or expired token");
+        return;
       }
 
       response.locals.userId = jwtPayload.sub;
       next();
     } catch {
-      return response.status(401).json({
-        error: "Invalid or expired token",
-      });
+      sendErrorResponse(response, 401, "Invalid or expired token");
     }
   };
 }
