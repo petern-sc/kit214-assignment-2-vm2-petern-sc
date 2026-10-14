@@ -16,6 +16,10 @@ export function createApp(config: AppConfig) {
   app.use(createCanvasRoutes(config));
   app.use(createChatRoutes(config));
 
+  app.get("/ping", (_request, response) => {
+    response.status(200).json({ status: "pong" });
+  });
+
   app.get("/", (_request, response) => {
     response.json({ message: "Hello, world!" });
   });
