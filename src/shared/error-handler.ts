@@ -7,16 +7,27 @@ export const errorHandler: ErrorRequestHandler = (
   response,
   next,
 ) => {
+  if (response.headersSent) {
+    next(error);
+    return;
+  }
+
+  if (
+    error instanceof SyntaxError &&
+    "type" in error &&
+    error.type === "entity.parse.failed" &&
+    "status" in error &&
+    error.status === 400
+  ) {
+    sendErrorResponse(response, 400, "Malformed JSON request body");
+    return;
+  }
+
   console.error("Unhandled request error", {
     method: request.method,
     path: request.originalUrl,
     error,
   });
-
-  if (response.headersSent) {
-    next(error);
-    return;
-  }
 
   sendErrorResponse(response, 500, "Internal server error.");
 };
