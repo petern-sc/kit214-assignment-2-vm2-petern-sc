@@ -1,25 +1,26 @@
-# KIT214 Assignment 2
+# kit214-assignment-2-vm2-petern-sc
 
-## Getting started
+## VM setup
 
-Install dependencies and start the development server:
+- install node26
+- Run `npm ci` to install dependencies.
+- Database setup is in `data/init.sql`.
 
-```sh
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-source ~/.nvm/nvm.sh
-nvm install 26
-sudo apt install -y libatomic1
+### Environment configuration
+- Copy `.env.example` to `.env` and update the values for the environment.
 
-npm install
-npm run dev
-```
+### HTTPS configuration
 
-The server listens on port `3000` by default. Set `PORT` to use a different
-port. `GET /` returns a JSON hello-world response.
+- Configured via express. When `APP_ENV=development` skips TLS setup for local dev. Setting APP_ENV to anything else will run express with https.
+- Requires `TLS_CERT_PATH` and `TLS_KEY_PATH` to be set. This is pointing to a self signed certificate on the VMs
 
-## Scripts
+### Running
 
-- `npm run dev` starts the server with TypeScript watch/reload tooling.
-- `npm run build` compiles the application into `dist/`.
-- `npm start` runs the compiled application.
-- `npm test` runs the test suite.
+- `npm run dev` runs the TypeScript source directly and restarts the server when source files change; no build is needed.
+- `npm run build` compiles the source into `dist/`.
+- `npm start` runs the compiled `dist/server.js`, so rebuild after changing source before using it.
+- `npm run generate:jwt-secrets` generate JWT signing secret
+
+## References
+
+See VM3 Repo for main documentation.
